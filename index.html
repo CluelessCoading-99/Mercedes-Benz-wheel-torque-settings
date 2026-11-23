@@ -1,0 +1,888 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mercedes-Benz Wheel Torque Specification Lookup</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            obsidian: '#090c10',
+            slateDark: '#11161d',
+            slateCard: '#161c24',
+            steelBorder: '#26303d',
+            petronas: '#00d2be',
+            petronasDim: '#009e8f',
+            silverChrome: '#e2e8f0',
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: #090c10;
+      background-image:
+        radial-gradient(circle at 50% 0%, rgba(0, 210, 190, 0.08) 0%, transparent 55%),
+        linear-gradient(rgba(0, 210, 190, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 210, 190, 0.035) 1px, transparent 1px);
+      background-size: 100% 100%, 80px 80px, 80px 80px;
+      color: #e2e8f0;
+    }
+    .brushed-metal {
+      background: linear-gradient(135deg, rgba(24, 31, 41, 0.96) 0%, rgba(15, 20, 27, 0.98) 50%, rgba(22, 29, 38, 0.96) 100%);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.75);
+    }
+    .wheel-glow {
+      filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 12px rgba(0, 210, 190, 0.22));
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .group:hover .wheel-glow {
+      transform: scale(1.04) rotate(12deg);
+    }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #090c10; }
+    ::-webkit-scrollbar-thumb { background: #26303d; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #00d2be; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-petronas selection:text-obsidian">
+
+  <!-- Header -->
+  <header class="brushed-metal sticky top-0 z-30 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3.5">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-b from-slate-700/60 to-slate-900 border border-slate-500/40 flex items-center justify-center shadow-inner shrink-0">
+          <svg class="w-7 h-7 text-petronas" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="32" cy="32" r="26" stroke="currentColor" stroke-width="2"/>
+            <circle cx="32" cy="32" r="8" fill="#00d2be" stroke="none"/>
+            <path d="M32 6 L32 24 M32 40 L32 58 M6 32 L24 32 M40 32 L58 32" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white uppercase">
+              Mercedes-Benz <span class="text-petronas">Wheel Torque</span>
+            </h1>
+            <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-petronas/15 text-petronas border border-petronas/30">
+              R.H Verified
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 font-medium">Passenger Vehicle Fastener Reference</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="openAddModalBtn" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-petronas/15 hover:bg-petronas/25 text-petronas border border-petronas/40 text-xs sm:text-sm font-semibold transition active:scale-95">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          <span>Add Spec</span>
+        </button>
+
+        <!-- Settings Cog Menu -->
+        <div class="relative">
+          <button id="settingsCogBtn" type="button" title="Database Settings &amp; Backup" aria-label="Database Settings and Backup" class="p-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-600/50 transition active:scale-95 flex items-center justify-center">
+            <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </button>
+
+          <!-- Responsive Dropdown Menu (full-width inset on mobile, right-aligned on desktop) -->
+          <div id="settingsDropdown" class="hidden fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-20 sm:top-auto sm:mt-2 w-auto sm:w-56 bg-slateDark border border-slate-700 rounded-xl shadow-2xl py-2 z-50">
+            <button id="menuEditListBtn" type="button" class="w-full text-left px-4 py-2.5 text-xs font-semibold text-petronas hover:bg-slate-800 flex items-center gap-2">
+              <svg class="w-4 h-4 text-petronas" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"/></svg>
+              <span>Edit Vehicle List</span>
+            </button>
+            <div class="border-t border-slate-800 my-1"></div>
+            <button id="menuExportBtn" type="button" class="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-800 flex items-center gap-2">
+              <svg class="w-4 h-4 text-petronas" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              <span>Export JSON Backup</span>
+            </button>
+            <label class="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-800 flex items-center gap-2 cursor-pointer">
+              <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              <span>Import JSON Database</span>
+              <input type="file" id="importFileJson" accept=".json" class="hidden" />
+            </label>
+            <div class="border-t border-slate-800 my-1"></div>
+            <button id="menuResetBtn" type="button" class="w-full text-left px-4 py-2.5 text-xs font-semibold text-red-400 hover:bg-red-500/10 flex items-center gap-2">
+              <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              <span>Reset to Defaults</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+    <!-- Search Deck -->
+    <section class="bg-slateDark/90 border border-steelBorder rounded-2xl p-4 sm:p-5 shadow-2xl">
+      <div class="relative flex-1">
+        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <svg class="w-5 h-5 text-petronas" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+          </svg>
+        </div>
+        <input
+          id="searchInput"
+          type="text"
+          autocomplete="off"
+          spellcheck="false"
+          autofocus
+          placeholder="Type exact chassis code (e.g. 177, 205, 447, 638), model name, or year... (Press /)"
+          class="w-full pl-12 pr-28 py-3.5 sm:py-4 rounded-xl bg-obsidian border-2 border-slate-700 focus:border-petronas focus:ring-2 focus:ring-petronas/25 text-white placeholder-slate-500 font-mono text-sm sm:text-base outline-none transition"
+        />
+        <button
+          id="clearSearchBtn"
+          type="button"
+          class="hidden absolute inset-y-2 right-2 px-4 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 font-sans font-bold text-xs sm:text-sm tracking-wide uppercase transition flex items-center gap-1.5"
+        >
+          <span>Clear</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Categories -->
+      <div class="mt-4 flex items-center justify-between gap-3 flex-wrap">
+        <div id="categoryFilters" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+          <button data-cat="all" class="cat-pill active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition whitespace-nowrap bg-petronas text-obsidian border-petronas shadow-md shadow-petronas/20">
+            All Passenger Models
+          </button>
+          <button data-cat="passenger" class="cat-pill px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition whitespace-nowrap bg-slateCard text-slate-300 border-steelBorder hover:border-slate-500">
+            Saloon / Hatch / V-Class / EQV
+          </button>
+          <button data-cat="amg" class="cat-pill px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition whitespace-nowrap bg-slateCard text-slate-300 border-steelBorder hover:border-slate-500">
+            AMG / Roadster
+          </button>
+          <button data-cat="suv" class="cat-pill px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition whitespace-nowrap bg-slateCard text-slate-300 border-steelBorder hover:border-slate-500">
+            SUV / G-Class
+          </button>
+          <button data-cat="eq" class="cat-pill px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition whitespace-nowrap bg-slateCard text-slate-300 border-steelBorder hover:border-slate-500">
+            EQ Electric
+          </button>
+        </div>
+
+        <div class="text-xs font-mono text-slate-400">
+          Showing <span id="resultCount" class="text-petronas font-bold">0</span> series
+        </div>
+      </div>
+
+      <!-- Quick Chips -->
+      <div class="mt-3 pt-3 border-t border-slate-800/90 flex items-center gap-2 overflow-x-auto no-scrollbar">
+        <span class="text-[11px] font-mono uppercase tracking-wider text-slate-500 shrink-0">Quick Jump:</span>
+        <div id="quickChips" class="flex items-center gap-1.5"></div>
+      </div>
+    </section>
+
+    <!-- Spotlight Panel -->
+    <section id="spotlightSection" class="hidden"></section>
+
+    <!-- Models Grid -->
+    <section aria-label="Chassis Torque Specifications">
+      <div id="modelsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5"></div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="hidden bg-slateDark/80 border border-steelBorder rounded-2xl p-10 text-center max-w-lg mx-auto my-8">
+        <h3 class="text-lg font-bold text-white mb-1">No Matching Chassis Found</h3>
+        <p class="text-sm text-slate-400 mb-5">No series matched "<span id="emptyQueryText" class="font-mono text-petronas"></span>".</p>
+        <div class="flex items-center justify-center gap-3">
+          <button id="emptyResetBtn" type="button" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold border border-slate-600 transition">
+            Reset Search
+          </button>
+          <button id="emptyAddBtn" type="button" class="px-4 py-2.5 rounded-xl bg-petronas text-obsidian text-sm font-bold hover:bg-petronasDim transition">
+            + Add Model
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 bg-obsidian/90 py-4 px-4 sm:px-6 mt-8">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+      <span>Verify wheel bolt cleanliness &amp; calibrated torque wrench before final tightening.</span>
+      <span class="font-mono text-slate-400">WIS WHEEL TORQUE TABLE</span>
+    </div>
+  </footer>
+
+  <!-- Add / Edit Spec Modal -->
+  <div id="specModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="bg-slateDark border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-slateDark z-10">
+        <h2 id="modalTitle" class="text-lg font-bold text-white">Add / Edit Model Torque Spec</h2>
+        <button id="closeModalBtn" type="button" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">✕</button>
+      </div>
+
+      <form id="specForm" class="p-6 space-y-4">
+        <input type="hidden" id="editOriginalCode" value="" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-1.5">Chassis Series Code *</label>
+            <input id="formCode" type="text" required placeholder="e.g. 206" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian border border-slate-700 text-white font-mono text-sm outline-none focus:border-petronas" />
+          </div>
+          <div>
+            <label class="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-1.5">Official Model Name *</label>
+            <input id="formName" type="text" required placeholder="e.g. C-Class (W206)" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian border border-slate-700 text-white text-sm outline-none focus:border-petronas" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-1.5">Production Years *</label>
+            <input id="formYears" type="text" required placeholder="e.g. 2021–Present" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian border border-slate-700 text-white font-mono text-sm outline-none focus:border-petronas" />
+          </div>
+          <div>
+            <label class="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-1.5">Category</label>
+            <select id="formCategory" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian border border-slate-700 text-white text-sm outline-none focus:border-petronas">
+              <option value="passenger">Saloon / Hatch / V-Class / EQV</option>
+              <option value="amg">AMG / Roadster</option>
+              <option value="suv">SUV / G-Class</option>
+              <option value="eq">EQ Electric</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-1.5">Search Aliases (comma separated)</label>
+          <input id="formAliases" type="text" placeholder="e.g. W206, C43, C63" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian border border-slate-700 text-white text-sm outline-none focus:border-petronas" />
+        </div>
+
+        <div class="pt-2">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-xs font-mono uppercase tracking-wider text-petronas font-bold">Torque Options &amp; Variants *</label>
+            <button id="addVariantRowBtn" type="button" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-petronas border border-slate-600">+ Add Row</button>
+          </div>
+          <div id="variantsContainer" class="space-y-2.5"></div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-800 flex items-center justify-between gap-3">
+          <button id="deleteModelBtn" type="button" class="hidden px-4 py-2.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 text-sm font-semibold">Delete</button>
+          <div class="flex items-center gap-3 ml-auto">
+            <button id="cancelModalBtn" type="button" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold">Cancel</button>
+            <button type="submit" class="px-5 py-2.5 rounded-xl bg-petronas hover:bg-petronasDim text-obsidian text-sm font-bold shadow-lg">Save Spec</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Vehicle List Manager Modal -->
+  <div id="vehicleListModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="bg-slateDark border border-slate-700 rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+      <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slateDark shrink-0">
+        <div>
+          <h2 class="text-lg font-bold text-white">Edit Vehicle List</h2>
+          <p class="text-xs text-slate-400">Add, edit, or remove models &amp; torque values, then export JSON for other devices.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="listAddNewBtn" type="button" class="px-3.5 py-2 rounded-xl bg-petronas text-obsidian text-xs font-bold hover:bg-petronasDim transition">+ Add Model</button>
+          <button id="closeVehicleListModalBtn" type="button" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">✕</button>
+        </div>
+      </div>
+
+      <div class="px-6 py-3 bg-slate-900/70 border-b border-slate-800 shrink-0">
+        <input
+          id="vehicleListFilterInput"
+          type="text"
+          placeholder="Filter models in list by chassis code or name..."
+          class="w-full px-3.5 py-2 rounded-xl bg-obsidian border border-slate-700 focus:border-petronas text-white font-mono text-xs sm:text-sm outline-none"
+        />
+      </div>
+
+      <div id="vehicleListRows" class="p-6 overflow-y-auto space-y-2.5 flex-1"></div>
+
+      <div class="px-6 py-3.5 border-t border-slate-800 bg-slate-900/80 flex items-center justify-between gap-3 shrink-0">
+        <span id="vehicleListCount" class="text-xs font-mono text-slate-400"></span>
+        <button id="doneVehicleListBtn" type="button" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold border border-slate-600">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toastBanner" class="fixed bottom-5 right-5 z-50 hidden items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900 border border-petronas/50 text-white text-sm font-medium shadow-2xl">
+    <span class="w-2.5 h-2.5 rounded-full bg-petronas"></span>
+    <span id="toastMessage">Saved</span>
+  </div>
+
+  <script>
+    // =========================================================================
+    // WHEEL ARTWORK CONFIGURATION
+    // Upload your two wheel images into the same GitHub folder as index.html
+    // named "alloy-wheel.jpg" and "steel-wheel.jpg" (or change .jpg to .png
+    // below to match your saved filenames).
+    // =========================================================================
+    const ALLOY_WHEEL_SVG = `
+      <img src="alloy-wheel.jpg" alt="Alloy Wheel" class="w-20 h-20 object-cover rounded-full mx-auto wheel-glow border border-slate-700/80" />
+    `;
+
+    const STEEL_WHEEL_SVG = `
+      <img src="steel-wheel.jpg" alt="Steel Wheel" class="w-20 h-20 object-cover rounded-full mx-auto wheel-glow border border-slate-700/80" />
+    `;
+
+    const COMPACT_WHEEL_ICON = `
+      <img src="alloy-wheel.jpg" alt="" class="w-9 h-9 object-cover rounded-full wheel-glow shrink-0 border border-slate-700/80" />
+    `;
+
+    const INITIAL_MODELS = [
+      { code: "117", years: "2013–2019", name: "CLA-Class (C117 / X117)", category: "passenger", aliases: ["C117", "X117", "CLA", "Shooting Brake"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "" }] },
+      { code: "118", years: "2019–Present", name: "CLA-Class (C118 / X118)", category: "passenger", aliases: ["C118", "X118", "CLA"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 130 Nm", steel: "" }] },
+      { code: "124", years: "1984–1997", name: "E-Class / Mid-Size (W124)", category: "passenger", aliases: ["W124", "S124", "C124", "A124", "300E", "500E"], variants: [{ condition: "Alloy Wheel", alloy: "110 Nm", steel: "" }] },
+      { code: "129", years: "1989–2001", name: "SL-Class Roadster (R129)", category: "amg", aliases: ["R129", "SL320", "SL500"], variants: [{ condition: "Alloy Wheel", alloy: "110 Nm", steel: "" }] },
+      { code: "140", years: "1991–1998", name: "S-Class Saloon (W140)", category: "passenger", aliases: ["W140", "V140", "C140", "S500", "S600"], variants: [{ condition: "Alloy Wheel", alloy: "150 Nm", steel: "" }] },
+      { code: "156", years: "2013–2019", name: "GLA-Class (X156)", category: "suv", aliases: ["X156", "GLA", "GLA45"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "" }] },
+      { code: "163", years: "1997–2005", name: "M-Class / ML (W163)", category: "suv", aliases: ["W163", "ML", "M-Class"], variants: [{ condition: "Alloy Wheel", alloy: "150 Nm", steel: "" }] },
+      { code: "164", years: "2005–2012", name: "M-Class / GL (W164 / X164)", category: "suv", aliases: ["W164", "X164", "ML", "GL"], variants: [{ condition: "Alloy Wheel", alloy: "150 Nm", steel: "" }] },
+      { code: "166", years: "2011–2019", name: "M-Class / GLE / GLS (W166)", category: "suv", aliases: ["W166", "X166", "GLE", "GLS"], variants: [{ condition: "Alloy Wheel", alloy: "150 Nm", steel: "" }] },
+      { code: "167", years: "2018–Present", name: "GLE / GLS (V167 / X167)", category: "suv", aliases: ["V167", "X167", "C167", "GLE Coupe"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 150 Nm", steel: "" }] },
+      { code: "168", years: "1997–2004", name: "A-Class (W168)", category: "passenger", aliases: ["W168", "V168", "A140", "A160"], variants: [{ condition: "Alloy Wheel", alloy: "110 Nm", steel: "" }] },
+      { code: "169", years: "2004–2012", name: "A-Class (W169)", category: "passenger", aliases: ["W169", "C169", "A150", "A180"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "" }] },
+      { code: "171", years: "2004–2011", name: "SLK-Class Roadster (R171)", category: "amg", aliases: ["R171", "SLK", "SLK55"], variants: [{ condition: "Alloy Wheel", alloy: "110 Nm", steel: "" }] },
+      { code: "172", years: "2011–2020", name: "SLK / SLC Roadster (R172)", category: "amg", aliases: ["R172", "SLC", "SLC43"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "" }] },
+      { code: "174", years: "2025–Present", name: "CLA-Class Electric (C174 / X174)", category: "eq", aliases: ["C174", "X174", "CLA", "EQ"], variants: [{ condition: "Steel / Alloy Wheel", alloy: "75 then 150 Nm", steel: "75 then 150 Nm" }, { condition: "Aluminum Hub Cover to Alloy Wheel", alloy: "27 Nm", steel: "" }] },
+      { code: "176", years: "2012–2018", name: "A-Class (W176)", category: "passenger", aliases: ["W176", "A200", "A45"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "" }] },
+      { code: "177", years: "2018–Present", name: "A-Class (W177 / V177)", category: "passenger", aliases: ["W177", "A35", "A45"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 130 Nm", steel: "" }] },
+      { code: "178", years: "2025–Present", name: "CLA-Class Hybrid (C178 / X178)", category: "passenger", aliases: ["C178", "X178", "CLA", "Hybrid"], variants: [{ condition: "Steel / Alloy Wheel", alloy: "75 then 150 Nm", steel: "75 then 150 Nm" }] },
+      { code: "190", years: "2014–2023", name: "Mercedes-AMG GT (C190)", category: "amg", aliases: ["C190", "R190", "AMG GT", "GTR"], variants: [{ condition: "Standard Bolt", alloy: "110 Nm", steel: "" }, { condition: "19mm Wheel Bolt", alloy: "180 Nm", steel: "" }] },
+      { code: "192", years: "2023–Present", name: "Mercedes-AMG GT Coupe (C192)", category: "amg", aliases: ["C192", "GT55", "GT63"], variants: [{ condition: "Alloy Wheel", alloy: "90 then 180 Nm", steel: "" }] },
+      { code: "197", years: "2010–2014", name: "SLS AMG Gullwing (C197)", category: "amg", aliases: ["C197", "R197", "SLS", "Gullwing"], variants: [{ condition: "17mm Wheel Bolt", alloy: "130 Nm", steel: "" }, { condition: "19mm Wheel Bolt", alloy: "180 Nm", steel: "" }] },
+      { code: "199", years: "2003–2010", name: "SLR McLaren (C199)", category: "amg", aliases: ["C199", "SLR", "722"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "" }] },
+      { code: "202", years: "1993–2000", name: "C-Class (W202)", category: "passenger", aliases: ["W202", "S202", "C36", "C43"], variants: [{ condition: "Alloy Wheel", alloy: "110 Nm", steel: "" }] },
+      { code: "203", years: "2000–2007", name: "C-Class (W203)", category: "passenger", aliases: ["W203", "S203", "CL203", "C32", "C55"], variants: [{ condition: "Alloy Wheel", alloy: "110 Nm", steel: "" }] },
+      { code: "204", years: "2007–2014", name: "C-Class (W204)", category: "passenger", aliases: ["W204", "C63", "Black Series"], variants: [{ condition: "Except code P98", alloy: "130 Nm", steel: "" }, { condition: "With code P98", alloy: "180 Nm", steel: "" }] },
+      { code: "204.9", years: "2008–2015", name: "GLK-Class (X204)", category: "suv", aliases: ["X204", "GLK", "GLK350"], variants: [{ condition: "GLK-Class", alloy: "140 Nm", steel: "" }] },
+      { code: "205", years: "2014–2021", name: "C-Class (W205)", category: "passenger", aliases: ["W205", "C43", "C63"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 130 Nm", steel: "" }] },
+      { code: "206", years: "2021–Present", name: "C-Class (W206)", category: "passenger", aliases: ["W206", "S206", "C43"], variants: [{ condition: "Engine 254 / 654", alloy: "65 then 130 Nm", steel: "" }, { condition: "Engine 139 / ME10", alloy: "75 then 150 Nm", steel: "" }] },
+      { code: "207", years: "2009–2017", name: "E-Class Coupe / Cabrio (C207)", category: "passenger", aliases: ["C207", "A207"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "" }] },
+      { code: "208", years: "1997–2003", name: "CLK-Class (C208)", category: "passenger", aliases: ["W208", "C208", "CLK55"], variants: [{ condition: "Alloy Wheel", alloy: "110 Nm", steel: "" }] },
+      { code: "209", years: "2002–2010", name: "CLK-Class (C209)", category: "passenger", aliases: ["C209", "A209", "CLK DTM"], variants: [{ condition: "Except code P98", alloy: "110 Nm", steel: "" }, { condition: "With code P98", alloy: "130 Nm", steel: "" }] },
+      { code: "210", years: "1995–2002", name: "E-Class (W210)", category: "passenger", aliases: ["W210", "S210", "E55"], variants: [{ condition: "Code 979 (A)", alloy: "150 Nm", steel: "" }, { condition: "Standard / Code 979 (B/C)", alloy: "110 Nm", steel: "" }] },
+      { code: "211", years: "2002–2009", name: "E-Class (W211)", category: "passenger", aliases: ["W211", "E55", "E63"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "" }] },
+      { code: "212", years: "2009–2016", name: "E-Class (W212)", category: "passenger", aliases: ["W212", "S212", "E63"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "" }] },
+      { code: "213", years: "2016–2023", name: "E-Class (W213)", category: "passenger", aliases: ["W213", "S213", "E63"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 150 Nm", steel: "75 then 130 Nm" }] },
+      { code: "214", years: "2023–Present", name: "E-Class (W214)", category: "passenger", aliases: ["W214", "All-Terrain"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 150 Nm", steel: "" }] },
+      { code: "215", years: "1999–2006", name: "CL-Class Coupe (C215)", category: "passenger", aliases: ["C215", "CL55", "CL600"], variants: [{ condition: "Alloy Wheel", alloy: "150 Nm", steel: "" }] },
+      { code: "216", years: "2006–2013", name: "CL-Class Coupe (C216)", category: "passenger", aliases: ["C216", "CL63", "CL65"], variants: [{ condition: "Alloy Wheel", alloy: "150 Nm", steel: "" }] },
+      { code: "217", years: "2014–2020", name: "S-Class Coupe / Cabrio (C217)", category: "passenger", aliases: ["C217", "A217", "S63"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 150 Nm", steel: "" }] },
+      { code: "218", years: "2011–2018", name: "CLS-Class (C218)", category: "passenger", aliases: ["C218", "X218", "CLS63"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "" }] },
+      { code: "219", years: "2004–2010", name: "CLS-Class (C219)", category: "passenger", aliases: ["C219", "CLS55", "CLS63"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "" }] },
+      { code: "220", years: "1998–2005", name: "S-Class (W220)", category: "passenger", aliases: ["W220", "V220", "S55"], variants: [{ condition: "Alloy Wheel", alloy: "150 Nm", steel: "" }] },
+      { code: "221", years: "2005–2013", name: "S-Class (W221)", category: "passenger", aliases: ["W221", "S63", "S65"], variants: [{ condition: "Alloy Wheel", alloy: "150 Nm", steel: "" }] },
+      { code: "222", years: "2013–2020", name: "S-Class / Maybach (W222)", category: "passenger", aliases: ["W222", "V222", "Guard", "B7"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 150 Nm", steel: "" }, { condition: "Armoured (B7)", alloy: "75 then 180 Nm", steel: "" }] },
+      { code: "223", years: "2020–Present", name: "S-Class / Maybach (W223)", category: "passenger", aliases: ["W223", "Z223", "Guard", "Z07"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 150 Nm", steel: "" }, { condition: "Armoured (Z07)", alloy: "75 then 180 Nm", steel: "" }] },
+      { code: "230", years: "2001–2011", name: "SL-Class Roadster (R230)", category: "amg", aliases: ["R230", "SL55", "SL63"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "" }] },
+      { code: "231", years: "2012–2020", name: "SL-Class Roadster (R231)", category: "amg", aliases: ["R231", "SL63"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "" }] },
+      { code: "232", years: "2022–Present", name: "Mercedes-AMG SL (R232)", category: "amg", aliases: ["R232", "SL43", "SL63"], variants: [{ condition: "Alloy Wheel", alloy: "90 then 180 Nm", steel: "" }] },
+      { code: "236", years: "2023–Present", name: "CLE-Class Coupe / Cabrio (C236)", category: "passenger", aliases: ["C236", "A236", "CLE"], variants: [{ condition: "W/O ME10 + MO14", alloy: "65 then 130 Nm", steel: "" }, { condition: "With MO16 + 254", alloy: "75 then 150 Nm", steel: "" }] },
+      { code: "238", years: "2017–2023", name: "E-Class Coupe / Cabrio (C238)", category: "passenger", aliases: ["C238", "A238", "E53"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 150 Nm", steel: "" }] },
+      { code: "240", years: "2002–2012", name: "Maybach 57 / 62 (W240)", category: "passenger", aliases: ["W240", "V240", "Maybach"], variants: [{ condition: "Alloy Wheel", alloy: "150 Nm", steel: "" }] },
+      { code: "242", years: "2014–2017", name: "B-Class Electric Drive (W242)", category: "eq", aliases: ["W242", "B250e"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "" }] },
+      { code: "243", years: "2021–Present", name: "EQA Electric SUV (H243)", category: "eq", aliases: ["H243", "EQA"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 150 Nm", steel: "" }] },
+      { code: "245", years: "2005–2011", name: "B-Class (W245)", category: "passenger", aliases: ["W245"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "" }] },
+      { code: "246", years: "2011–2018", name: "B-Class (W246)", category: "passenger", aliases: ["W246"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "" }] },
+      { code: "247", years: "2019–Present", name: "GLA / GLB-Class (H247 / X247)", category: "suv", aliases: ["H247", "X247", "GLA", "GLB"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 130 Nm", steel: "" }] },
+      { code: "251", years: "2005–2017", name: "R-Class Grand Sports Tourer (W251)", category: "passenger", aliases: ["W251", "V251", "R350", "R63"], variants: [{ condition: "Alloy Wheel", alloy: "150 Nm", steel: "" }] },
+      { code: "253", years: "2015–2022", name: "GLC-Class / Coupe (X253)", category: "suv", aliases: ["X253", "C253", "GLC", "GLC63"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 150 Nm", steel: "" }] },
+      { code: "254", years: "2022–Present", name: "GLC-Class / Coupe (X254)", category: "suv", aliases: ["X254", "C254", "GLC"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 150 Nm", steel: "" }] },
+      { code: "257", years: "2018–2023", name: "CLS-Class (C257)", category: "passenger", aliases: ["C257", "CLS53"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 150 Nm", steel: "" }] },
+      { code: "290", years: "2018–Present", name: "AMG GT 4-Door Coupe (X290)", category: "amg", aliases: ["X290", "GT63"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 150 Nm", steel: "" }] },
+      { code: "292", years: "2015–2019", name: "GLE Coupe (C292)", category: "suv", aliases: ["C292", "GLE63"], variants: [{ condition: "Alloy Wheel", alloy: "150 Nm", steel: "" }] },
+      { code: "293", years: "2019–2023", name: "EQC Electric SUV (N293)", category: "eq", aliases: ["N293", "EQC"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 150 Nm", steel: "" }] },
+      { code: "294", years: "2022–Present", name: "EQE SUV (X294)", category: "eq", aliases: ["X294", "EQE SUV"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 150 Nm", steel: "" }] },
+      { code: "295", years: "2022–Present", name: "EQE Saloon (V295)", category: "eq", aliases: ["V295", "EQE Saloon"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 150 Nm", steel: "" }] },
+      { code: "296", years: "2022–Present", name: "EQS SUV (X296)", category: "eq", aliases: ["X296", "EQS SUV"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 150 Nm", steel: "" }] },
+      { code: "297", years: "2021–Present", name: "EQS Saloon (V297)", category: "eq", aliases: ["V297", "EQS Saloon"], variants: [{ condition: "Alloy Wheel", alloy: "75 then 150 Nm", steel: "" }] },
+      { code: "447", years: "2014–Present", name: "V-Class / EQV (W447)", category: "passenger", aliases: ["W447", "V-Class", "EQV", "V220d", "V250d", "V300d"], variants: [{ condition: "Alloy Wheel", alloy: "180 Nm", steel: "200 Nm" }] },
+      { code: "448", years: "2024–Present", name: "V-Class / EQV Facelift (W448)", category: "passenger", aliases: ["W448", "V-Class", "EQV"], variants: [{ condition: "Alloy Wheel", alloy: "140 Nm", steel: "140 Nm" }] },
+      { code: "460", years: "1979–1992", name: "G-Class Classic (W460)", category: "suv", aliases: ["W460", "G-Wagen"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "180 Nm" }] },
+      { code: "461", years: "1992–2019", name: "G-Class Pur / Worker (W461)", category: "suv", aliases: ["W461", "G-Wagen", "Pur"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "180 Nm" }] },
+      { code: "463", years: "1990–Present", name: "G-Class / G63 AMG (W463)", category: "suv", aliases: ["W463", "G63", "G500"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "180 Nm" }, { condition: "As of 2019", alloy: "150 Nm", steel: "150 Nm" }] },
+      { code: "464", years: "2022–Present", name: "G-Class Professional (W464)", category: "suv", aliases: ["W464", "Professional"], variants: [{ condition: "Wheel Bolt", alloy: "130 Nm", steel: "" }, { condition: "Wheel Nut", alloy: "150 Nm", steel: "" }] },
+      { code: "638", years: "1996–2003", name: "Viano / V-Class Passenger (W638)", category: "passenger", aliases: ["W638", "Viano", "V-Class"], variants: [{ condition: "Alloy Wheel", alloy: "130 Nm", steel: "140 Nm" }] },
+      { code: "447.EQV", years: "2020–Present", name: "EQV Electric MPV (W447)", category: "eq", aliases: ["EQV", "W447 EQV", "EQV 300"], variants: [{ condition: "Alloy Wheel", alloy: "180 Nm", steel: "" }] }
+    ];
+
+    const STORAGE_KEY = "mb_wheel_torque_dualwheel_v6";
+    let modelsData = [];
+    let activeCategory = "all";
+    let searchQuery = "";
+    let selectedSpotlightCode = null;
+    let vehicleListFilter = "";
+
+    function loadDatabase() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            modelsData = parsed;
+            return;
+          }
+        }
+      } catch (err) { console.error(err); }
+      modelsData = JSON.parse(JSON.stringify(INITIAL_MODELS));
+    }
+
+    function saveDatabase() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(modelsData));
+        showToast("Database saved successfully");
+      } catch (err) { console.error(err); }
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toastBanner");
+      document.getElementById("toastMessage").textContent = msg;
+      t.classList.remove("hidden");
+      t.classList.add("flex");
+      setTimeout(() => { t.classList.remove("flex"); t.classList.add("hidden"); }, 3000);
+    }
+
+    function formatTorqueBadge(torqueStr, type = "alloy", isHero = false) {
+      if (!torqueStr || !torqueStr.trim()) return `<span class="text-slate-600 font-mono text-xs">—</span>`;
+      const clean = torqueStr.trim();
+      const twoStageMatch = clean.match(/^(\d+)\s*then\s*(\d+)\s*Nm$/i);
+
+      if (twoStageMatch) {
+        const [_, s1, s2] = twoStageMatch;
+        if (isHero) {
+          return `
+            <div class="inline-flex flex-wrap items-center gap-2">
+              <span class="px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-400/40 text-amber-300 font-mono text-sm font-bold">1st: ${s1} Nm</span>
+              <span class="text-petronas font-bold">→</span>
+              <span class="px-3 py-1 rounded-lg bg-petronas/20 border border-petronas/50 text-petronas font-mono text-base font-extrabold">Final: ${s2} Nm</span>
+            </div>
+          `;
+        }
+        return `
+          <div class="inline-flex items-center gap-1.5 font-mono text-xs">
+            <span class="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">1st: ${s1}</span>
+            <span class="text-slate-500">→</span>
+            <span class="px-2 py-0.5 rounded bg-petronas/15 text-petronas border border-petronas/40 font-bold">${s2} Nm</span>
+          </div>
+        `;
+      }
+      return `<span class="px-2.5 py-1 rounded-lg border bg-petronas/15 border-petronas/40 text-petronas font-mono text-sm font-bold">${escapeHtml(clean)}</span>`;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function getFilteredModels() {
+      const q = searchQuery.trim().toLowerCase();
+      return modelsData.filter(m => {
+        if (activeCategory !== "all" && m.category !== activeCategory) return false;
+        if (!q) return true;
+        if (/^\d+(\.\d+)?$/.test(q)) return m.code.toLowerCase() === q || m.code.toLowerCase().startsWith(q);
+        const haystack = [m.code, `w${m.code}`, m.name, m.years || "", ...(m.aliases || [])].join(" ").toLowerCase();
+        return q.split(/\s+/).every(term => haystack.includes(term));
+      });
+    }
+
+    function renderSpotlight(model) {
+      const spotlightEl = document.getElementById("spotlightSection");
+      if (!model) { spotlightEl.classList.add("hidden"); spotlightEl.innerHTML = ""; return; }
+      const hasAnySteel = model.variants.some(v => v.steel && v.steel.trim() !== "");
+
+      spotlightEl.classList.remove("hidden");
+      spotlightEl.innerHTML = `
+        <div class="bg-gradient-to-br from-slateCard via-slateDark to-obsidian border-2 border-petronas/50 rounded-2xl overflow-hidden shadow-2xl">
+          <div class="px-5 py-3 bg-petronas/10 border-b border-petronas/25 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded bg-petronas text-obsidian font-mono text-xs font-extrabold uppercase">Active Spec Sheet</span>
+              <span class="text-xs font-mono text-white">CHASSIS <strong>${escapeHtml(model.code)}</strong></span>
+            </div>
+            <div class="flex items-center gap-3">
+              <button onclick="openEditModal('${escapeHtml(model.code)}')" class="text-xs font-mono text-petronas hover:underline">Edit Spec</button>
+              <button onclick="closeSpotlight()" class="text-xs text-slate-400 hover:text-white">Close ✕</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 p-5 sm:p-6 items-center">
+            <div class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-6 text-center">
+              <div class="flex items-center justify-center gap-5">
+                <div>
+                  ${ALLOY_WHEEL_SVG}
+                  <span class="block text-[10px] font-mono text-petronas mt-1.5 font-semibold">ALLOY</span>
+                </div>
+                ${hasAnySteel ? `
+                  <div class="h-14 w-px bg-slate-800"></div>
+                  <div>
+                    ${STEEL_WHEEL_SVG}
+                    <span class="block text-[10px] font-mono text-sky-300 mt-1.5 font-semibold">STEEL</span>
+                  </div>
+                ` : ""}
+              </div>
+              <div class="mt-3 font-mono text-xs text-petronas font-bold">GENUINE MERCEDES WHEEL SPEC</div>
+            </div>
+            <div class="lg:col-span-8 space-y-3">
+              <div class="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 class="text-xl sm:text-2xl font-extrabold text-white">Model ${escapeHtml(model.code)} — ${escapeHtml(model.name)}</h2>
+                <span class="text-xs font-mono text-slate-400">${escapeHtml(model.years)}</span>
+              </div>
+              <div class="bg-obsidian border border-slate-800 rounded-xl overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                  <tr class="border-b border-slate-800 text-slate-400 font-mono text-xs bg-slate-900/80">
+                    <th class="p-3">Variant / Type</th>
+                    <th class="p-3 text-petronas">Alloy Torque</th>
+                    ${hasAnySteel ? `<th class="p-3 text-sky-300">Steel Torque</th>` : ""}
+                  </tr>
+                  ${model.variants.map(v => `
+                    <tr class="border-b border-slate-800/60">
+                      <td class="p-3 font-semibold text-white">${escapeHtml(v.condition)}</td>
+                      <td class="p-3">${formatTorqueBadge(v.alloy, "alloy", true)}</td>
+                      ${hasAnySteel ? `<td class="p-3">${v.steel ? formatTorqueBadge(v.steel, "steel", true) : "—"}</td>` : ""}
+                    </tr>
+                  `).join("")}
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderApp() {
+      const filtered = getFilteredModels();
+      const gridEl = document.getElementById("modelsGrid");
+      const emptyEl = document.getElementById("emptyState");
+      document.getElementById("resultCount").textContent = filtered.length;
+      document.getElementById("clearSearchBtn").classList.toggle("hidden", !searchQuery);
+
+      let spotlightModel = selectedSpotlightCode ? modelsData.find(m => m.code === selectedSpotlightCode) : (filtered.length === 1 ? filtered[0] : null);
+      renderSpotlight(spotlightModel);
+
+      if (filtered.length === 0) {
+        gridEl.innerHTML = "";
+        emptyEl.classList.remove("hidden");
+        document.getElementById("emptyQueryText").textContent = searchQuery;
+        return;
+      }
+      emptyEl.classList.add("hidden");
+
+      gridEl.innerHTML = filtered.map(model => {
+        const hasSteel = model.variants.some(v => v.steel && v.steel.trim() !== "");
+
+        return `
+          <article onclick="selectSpotlight('${escapeHtml(model.code)}')" class="group cursor-pointer bg-slateCard hover:bg-slate-800/80 border ${spotlightModel?.code === model.code ? 'border-petronas' : 'border-steelBorder'} rounded-2xl p-4 flex flex-col justify-between transition shadow-lg">
+            <div class="flex items-start justify-between gap-2 mb-3">
+              <div class="flex items-start gap-2.5 min-w-0">
+                <span class="px-2.5 py-1 rounded-lg bg-obsidian border border-petronas/40 font-mono text-sm sm:text-base font-extrabold text-petronas shrink-0">${escapeHtml(model.code)}</span>
+                <div class="min-w-0">
+                  <h3 class="font-bold text-white text-sm group-hover:text-petronas transition truncate">${escapeHtml(model.name)}</h3>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <span class="text-[11px] font-mono text-slate-400">${escapeHtml(model.years)}</span>
+                    ${hasSteel ? `<span class="px-1.5 py-0.2 rounded bg-sky-500/15 border border-sky-400/30 text-[10px] font-mono text-sky-300">ALLOY + STEEL</span>` : ""}
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                ${COMPACT_WHEEL_ICON}
+                <button onclick="event.stopPropagation(); openEditModal('${escapeHtml(model.code)}')" title="Edit Spec" aria-label="Edit ${escapeHtml(model.name)}" class="p-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-petronas border border-slate-700 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="space-y-1.5">
+              ${model.variants.map(v => `
+                <div class="px-2.5 py-2 rounded-lg bg-obsidian border border-slate-800 flex items-center justify-between gap-2 text-xs">
+                  <span class="text-slate-300 font-medium truncate">${escapeHtml(v.condition)}</span>
+                  <div class="flex items-center gap-2 shrink-0">
+                    ${formatTorqueBadge(v.alloy, "alloy", false)}
+                    ${v.steel ? `<span class="px-2 py-0.5 rounded bg-sky-500/15 border border-sky-400/30 text-sky-300 font-mono font-bold" title="Steel Wheel">${escapeHtml(v.steel)}</span>` : ""}
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderVehicleListModal() {
+      const q = vehicleListFilter.trim().toLowerCase();
+      const list = modelsData.filter(m => {
+        if (!q) return true;
+        return [m.code, m.name, m.years || "", ...(m.aliases || [])].join(" ").toLowerCase().includes(q);
+      });
+
+      document.getElementById("vehicleListCount").textContent = `${list.length} of ${modelsData.length} vehicle series`;
+      const container = document.getElementById("vehicleListRows");
+
+      if (list.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-sm text-slate-400">No vehicle series match "${escapeHtml(vehicleListFilter)}".</div>`;
+        return;
+      }
+
+      container.innerHTML = list.map(m => {
+        const primaryAlloy = m.variants[0]?.alloy || "—";
+        const primarySteel = m.variants.find(v => v.steel)?.steel || "";
+        return `
+          <div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 p-3 rounded-xl bg-obsidian border border-slate-800">
+            <div class="flex items-center gap-3 min-w-0">
+              <span class="px-2.5 py-1 rounded-lg bg-slateDark border border-petronas/35 font-mono text-xs font-extrabold text-petronas shrink-0">${escapeHtml(m.code)}</span>
+              <div class="min-w-0">
+                <div class="text-sm font-bold text-white truncate">${escapeHtml(m.name)}</div>
+                <div class="text-[11px] font-mono text-slate-400">
+                  ${escapeHtml(m.years)} • Alloy: <span class="text-petronas">${escapeHtml(primaryAlloy)}</span>${primarySteel ? ` • Steel: <span class="text-sky-300">${escapeHtml(primarySteel)}</span>` : ""}
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0 ml-auto">
+              <button type="button" onclick="openEditModal('${escapeHtml(m.code)}')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700">Edit</button>
+              <button type="button" onclick="quickRemoveFromList('${escapeHtml(m.code)}')" class="px-3 py-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-400 text-xs font-semibold border border-red-500/30">Remove</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function quickRemoveFromList(code) {
+      if (!confirm(`Remove model ${code} from the vehicle list?`)) return;
+      modelsData = modelsData.filter(m => m.code !== code);
+      if (selectedSpotlightCode === code) selectedSpotlightCode = null;
+      saveDatabase();
+      renderVehicleListModal();
+      renderApp();
+    }
+
+    function selectSpotlight(code) { selectedSpotlightCode = code; renderApp(); }
+    function closeSpotlight() { selectedSpotlightCode = null; renderApp(); }
+
+    function populateQuickChips() {
+      const chips = ["177", "205", "206", "213", "447", "463", "638"];
+      document.getElementById("quickChips").innerHTML = chips.map(c => `
+        <button onclick="jumpToCode('${c}')" class="px-2.5 py-1 rounded-lg bg-obsidian text-slate-300 hover:text-petronas border border-slate-800 font-mono text-xs transition">${c}</button>
+      `).join("");
+    }
+
+    function jumpToCode(code) {
+      document.getElementById("searchInput").value = code;
+      searchQuery = code;
+      activeCategory = "all";
+      selectedSpotlightCode = code;
+      renderApp();
+    }
+
+    function addVariantRow(cond = "", alloy = "", steel = "") {
+      const row = document.createElement("div");
+      row.className = "variant-row grid grid-cols-1 sm:grid-cols-12 gap-2 p-3 rounded-xl bg-obsidian border border-slate-800 items-center";
+      row.innerHTML = `
+        <div class="sm:col-span-5"><input type="text" placeholder="Condition" value="${escapeHtml(cond)}" required class="var-cond w-full px-3 py-2 rounded bg-slateDark border border-slate-700 text-white text-xs outline-none" /></div>
+        <div class="sm:col-span-3"><input type="text" placeholder="Alloy Nm" value="${escapeHtml(alloy)}" required class="var-alloy w-full px-3 py-2 rounded bg-slateDark border border-slate-700 text-petronas font-mono text-xs outline-none" /></div>
+        <div class="sm:col-span-3"><input type="text" placeholder="Steel Nm (optional)" value="${escapeHtml(steel)}" class="var-steel w-full px-3 py-2 rounded bg-slateDark border border-slate-700 text-sky-300 font-mono text-xs outline-none" /></div>
+        <div class="sm:col-span-1 text-right"><button type="button" onclick="this.closest('.variant-row').remove()" class="text-red-400 hover:text-red-300 text-xs font-bold px-2 py-1">✕</button></div>
+      `;
+      document.getElementById("variantsContainer").appendChild(row);
+    }
+
+    function openAddModal(code = "") {
+      document.getElementById("modalTitle").textContent = "Add Model Torque Spec";
+      document.getElementById("editOriginalCode").value = "";
+      document.getElementById("formCode").value = code;
+      document.getElementById("formName").value = "";
+      document.getElementById("formYears").value = "";
+      document.getElementById("formAliases").value = "";
+      document.getElementById("deleteModelBtn").classList.add("hidden");
+      document.getElementById("variantsContainer").innerHTML = "";
+      addVariantRow("Alloy Wheel", "75 then 150 Nm", "");
+      document.getElementById("specModal").classList.remove("hidden");
+    }
+
+    function openEditModal(code) {
+      const m = modelsData.find(item => item.code === code);
+      if (!m) return;
+      document.getElementById("modalTitle").textContent = `Edit Model ${m.code}`;
+      document.getElementById("editOriginalCode").value = m.code;
+      document.getElementById("formCode").value = m.code;
+      document.getElementById("formName").value = m.name;
+      document.getElementById("formYears").value = m.years || "";
+      document.getElementById("formCategory").value = m.category || "passenger";
+      document.getElementById("formAliases").value = (m.aliases || []).join(", ");
+      document.getElementById("deleteModelBtn").classList.remove("hidden");
+      document.getElementById("variantsContainer").innerHTML = "";
+      m.variants.forEach(v => addVariantRow(v.condition, v.alloy, v.steel));
+      document.getElementById("specModal").classList.remove("hidden");
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      loadDatabase();
+      populateQuickChips();
+      renderApp();
+
+      // Keyboard shortcuts: '/' focuses search, 'Escape' closes modals/menus
+      window.addEventListener("keydown", (e) => {
+        const activeTag = document.activeElement?.tagName;
+        if (e.key === "/" && activeTag !== "INPUT" && activeTag !== "TEXTAREA" && activeTag !== "SELECT") {
+          e.preventDefault();
+          const sInput = document.getElementById("searchInput");
+          sInput.focus();
+          sInput.select();
+        } else if (e.key === "Escape") {
+          document.getElementById("specModal").classList.add("hidden");
+          document.getElementById("vehicleListModal").classList.add("hidden");
+          document.getElementById("settingsDropdown").classList.add("hidden");
+        }
+      });
+
+      // Settings Cog Toggle
+      const cogBtn = document.getElementById("settingsCogBtn");
+      const dropdown = document.getElementById("settingsDropdown");
+      cogBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle("hidden");
+      });
+      window.addEventListener("click", () => dropdown.classList.add("hidden"));
+
+      // Edit Vehicle List from Cog Menu
+      document.getElementById("menuEditListBtn").addEventListener("click", () => {
+        vehicleListFilter = "";
+        document.getElementById("vehicleListFilterInput").value = "";
+        renderVehicleListModal();
+        document.getElementById("vehicleListModal").classList.remove("hidden");
+      });
+
+      document.getElementById("closeVehicleListModalBtn").addEventListener("click", () => document.getElementById("vehicleListModal").classList.add("hidden"));
+      document.getElementById("doneVehicleListBtn").addEventListener("click", () => document.getElementById("vehicleListModal").classList.add("hidden"));
+      document.getElementById("listAddNewBtn").addEventListener("click", () => openAddModal());
+      document.getElementById("vehicleListFilterInput").addEventListener("input", (e) => {
+        vehicleListFilter = e.target.value;
+        renderVehicleListModal();
+      });
+
+      // Export JSON
+      document.getElementById("menuExportBtn").addEventListener("click", () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(modelsData, null, 2));
+        const dl = document.createElement("a");
+        dl.setAttribute("href", dataStr);
+        dl.setAttribute("download", "mercedes_wheel_torque_backup.json");
+        document.body.appendChild(dl);
+        dl.click();
+        dl.remove();
+        showToast("Database exported successfully");
+      });
+
+      // Import JSON
+      document.getElementById("importFileJson").addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          try {
+            const imported = JSON.parse(evt.target.result);
+            if (Array.isArray(imported) && imported.length > 0) {
+              modelsData = imported;
+              saveDatabase();
+              renderApp();
+              if (!document.getElementById("vehicleListModal").classList.contains("hidden")) {
+                renderVehicleListModal();
+              }
+              showToast("Database imported successfully");
+            } else {
+              alert("Invalid JSON format.");
+            }
+          } catch (err) {
+            alert("Error parsing JSON file.");
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = "";
+      });
+
+      // Reset to Defaults
+      document.getElementById("menuResetBtn").addEventListener("click", () => {
+        if (confirm("Are you sure you want to reset to factory default models? Any custom additions will be cleared.")) {
+          localStorage.removeItem(STORAGE_KEY);
+          modelsData = JSON.parse(JSON.stringify(INITIAL_MODELS));
+          renderApp();
+          if (!document.getElementById("vehicleListModal").classList.contains("hidden")) {
+            renderVehicleListModal();
+          }
+          showToast("Reset to factory defaults");
+        }
+      });
+
+      document.getElementById("searchInput").addEventListener("input", e => { searchQuery = e.target.value; selectedSpotlightCode = null; renderApp(); });
+      document.getElementById("clearSearchBtn").addEventListener("click", () => { document.getElementById("searchInput").value = ""; searchQuery = ""; renderApp(); });
+      document.getElementById("emptyResetBtn").addEventListener("click", () => { document.getElementById("searchInput").value = ""; searchQuery = ""; activeCategory = "all"; renderApp(); });
+      document.getElementById("emptyAddBtn").addEventListener("click", () => openAddModal(searchQuery));
+
+      document.querySelectorAll(".cat-pill").forEach(btn => {
+        btn.addEventListener("click", () => {
+          activeCategory = btn.dataset.cat;
+          document.querySelectorAll(".cat-pill").forEach(b => b.className = b.dataset.cat === activeCategory ? "cat-pill active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition whitespace-nowrap bg-petronas text-obsidian border-petronas shadow-md shadow-petronas/20" : "cat-pill px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition whitespace-nowrap bg-slateCard text-slate-300 border-steelBorder hover:border-slate-500");
+          selectedSpotlightCode = null;
+          renderApp();
+        });
+      });
+
+      document.getElementById("openAddModalBtn").addEventListener("click", () => openAddModal());
+      document.getElementById("closeModalBtn").addEventListener("click", () => document.getElementById("specModal").classList.add("hidden"));
+      document.getElementById("cancelModalBtn").addEventListener("click", () => document.getElementById("specModal").classList.add("hidden"));
+      document.getElementById("addVariantRowBtn").addEventListener("click", () => addVariantRow());
+
+      document.getElementById("specForm").addEventListener("submit", e => {
+        e.preventDefault();
+        const orig = document.getElementById("editOriginalCode").value.trim();
+        const code = document.getElementById("formCode").value.trim();
+        const name = document.getElementById("formName").value.trim();
+        const years = document.getElementById("formYears").value.trim();
+        const category = document.getElementById("formCategory").value;
+        const aliases = document.getElementById("formAliases").value.split(",").map(s => s.trim()).filter(Boolean);
+        const variants = Array.from(document.querySelectorAll(".variant-row")).map(r => ({
+          condition: r.querySelector(".var-cond").value.trim() || "Alloy Wheel",
+          alloy: r.querySelector(".var-alloy").value.trim(),
+          steel: r.querySelector(".var-steel").value.trim()
+        })).filter(v => v.alloy);
+
+        if (!code || !name || !variants.length) return;
+        const entry = { code, years, name, category, aliases, variants };
+
+        if (orig) {
+          const idx = modelsData.findIndex(m => m.code === orig);
+          if (idx !== -1) modelsData[idx] = entry; else modelsData.unshift(entry);
+        } else {
+          modelsData.unshift(entry);
+        }
+        saveDatabase();
+        document.getElementById("specModal").classList.add("hidden");
+        selectedSpotlightCode = code;
+        renderApp();
+        if (!document.getElementById("vehicleListModal").classList.contains("hidden")) {
+          renderVehicleListModal();
+        }
+      });
+
+      document.getElementById("deleteModelBtn").addEventListener("click", () => {
+        const orig = document.getElementById("editOriginalCode").value.trim();
+        if (!orig) return;
+        modelsData = modelsData.filter(m => m.code !== orig);
+        if (selectedSpotlightCode === orig) selectedSpotlightCode = null;
+        saveDatabase();
+        document.getElementById("specModal").classList.add("hidden");
+        renderApp();
+        if (!document.getElementById("vehicleListModal").classList.contains("hidden")) {
+          renderVehicleListModal();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+
